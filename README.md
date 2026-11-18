@@ -88,6 +88,12 @@ flowchart LR
 | Week 7 | **Cited cash-flow briefings, reports & reliability** — Add facts envelope and structured briefing schemas, add monthly net cash and category trend APIs, add traces, metrics and SLO dashboard | Planned |
 | Week 8 | **Security hardening & release** — Review authorization on every endpoint and internal token audiences, run abuse tests for CSV uploads and prompt injection, freeze v1 scope and tag release candidate, deploy v1 demo with HTTPS and monitoring | Planned |
 
+## Documentation
+
+- [Product charter](docs/product/charter.md), [personas](docs/product/personas.md) and [backlog](docs/product/backlog.md)
+- [ADR 0001: modular monorepo and service boundaries](docs/adr/0001-modular-monorepo-and-service-boundaries.md)
+- [Weekly progress](docs/progress/)
+
 ## Getting started
 
 Setup instructions will be added once the first services are in place.
