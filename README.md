@@ -2,7 +2,7 @@
 
 **Cash-flow simulator for independent businesses.** LedgerLens lets freelancers and small agencies rehearse future decisions, like "what if a client pays 18 days late and I buy a laptop next Thursday?", and see the effect on their cash runway before it happens.
 
-> **Status:** early development, following a 12-week roadmap (see below). The project uses synthetic business records and uploaded CSV files only. It does not connect to real bank accounts.
+> **Status:** early development, following an 8-week roadmap (see below). The project uses synthetic business records and uploaded CSV files only. It does not connect to real bank accounts.
 
 ## The problem
 
@@ -77,13 +77,16 @@ flowchart LR
 
 ## Roadmap
 
-| Weeks | Focus |
-|---|---|
-| 1–2 | Product definition, dev environment, identity, tenancy and authorization |
-| 3–5 | Ledger and accounting basics, CSV import and reconciliation, bills and invoices |
-| 6–8 | Forecast engine and charts, AI categorization with review, background jobs and first staging release |
-| 9–10 | AI explanations with citations, reports, performance and reliability |
-| 11–12 | Security review and hardening, release and demo |
+| Week | Focus | Status |
+|---|---|---|
+| Week 1 | **Product definition & dev environment** — Add product charter, personas, backlog and React app shell, bootstrap Django REST and FastAPI health services with Compose | Planned |
+| Week 2 | **Identity, tenancy & authorization** — Add organizations, memberships and session endpoints, add React sign-in, workspace switcher and tenant-scoped permissions | Planned |
+| Week 3 | **Ledger & accounting primitives** — Add accounts, categories, transactions and balanced journal posting, add paginated ledger endpoints and React transactions table | Planned |
+| Week 4 | **CSV import, reconciliation, bills & invoices** — Add CSV import batches with column mapping and replay protection, add invoices, bills, customers and vendors with state transitions, add invoice and bill views with status actions | Planned |
+| Week 5 | **Forecast engine & scenarios** — Add deterministic daily cash projection, add scenario overlays for payment delays and one-off costs | Planned |
+| Week 6 | **AI categorization, background jobs & staging** — Add categorization schema, provider interface and mock client, add idempotent Celery jobs for imports, categorization and forecasts, provision staging with managed PostgreSQL | Planned |
+| Week 7 | **Cited cash-flow briefings, reports & reliability** — Add facts envelope and structured briefing schemas, add monthly net cash and category trend APIs, add traces, metrics and SLO dashboard | Planned |
+| Week 8 | **Security hardening & release** — Review authorization on every endpoint and internal token audiences, run abuse tests for CSV uploads and prompt injection, freeze v1 scope and tag release candidate, deploy v1 demo with HTTPS and monitoring | Planned |
 
 ## Getting started
 
