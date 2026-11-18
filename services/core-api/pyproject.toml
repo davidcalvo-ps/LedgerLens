@@ -1,0 +1,17 @@
+[project]
+name = "ledgerlens-core-api"
+version = "0.1.0"
+description = "Authoritative LedgerLens business API (Django REST Framework)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
