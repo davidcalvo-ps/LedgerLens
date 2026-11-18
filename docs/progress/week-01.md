@@ -16,10 +16,17 @@
   - `compose.yaml`: PostgreSQL 17 with pgvector, Redis 7.4 and both services, with
     healthchecks; `data` and `services` networks keep the AI API away from the
     database and Redis; published ports bind to 127.0.0.1; `.env.example`
+  - `scripts/dev.sh up` starts the whole stack with one command (generates `.env` with
+    random secrets on first run, waits for every healthcheck); `web`, `check`, `down`
+    and `reset` subcommands; [getting started guide](../setup/getting-started.md)
+  - ESLint 9 flat config for the web app (typescript-eslint, React hooks rules)
 - Tests added / CI result: route and money unit tests (Vitest); pytest suites for both
-  health APIs (`services/core-api/tests`, `services/ai-api/tests`). CI comes later this week.
+  health APIs (`services/core-api/tests`, `services/ai-api/tests`). GitHub Actions CI
+  (`.github/workflows/ci.yml`): web lint, typecheck, Vitest and build; ruff and pytest for
+  core-api and ai-api; `docker compose config` against `.env.example`.
 - Security or reliability concerns: roles in the web app are a preview switch only;
   real authorization arrives with sign-in in week 2. The AI API has no authentication
   yet and is only reachable inside the Compose `services` network.
-- Unfinished work: startup guide, CI workflow.
-- Next: one-command local startup guide and a GitHub Actions lint and unit-test workflow.
+- Unfinished work: first demo screenshot and walkthrough, to be added once the stack
+  has been started from a clean clone.
+- Next: week 2, organizations, memberships, sign-in and tenant isolation.
