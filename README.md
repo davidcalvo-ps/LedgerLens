@@ -79,7 +79,7 @@ flowchart LR
 
 | Week | Focus | Status |
 |---|---|---|
-| Week 1 | **Product definition & dev environment** — Add product charter, personas, backlog and React app shell, bootstrap Django REST and FastAPI health services with Compose | Planned |
+| Week 1 | **Product definition & dev environment** — Add product charter, personas, backlog and React app shell, bootstrap Django REST and FastAPI health services with Compose | ✅ Done |
 | Week 2 | **Identity, tenancy & authorization** — Add organizations, memberships and session endpoints, add React sign-in, workspace switcher and tenant-scoped permissions | Planned |
 | Week 3 | **Ledger & accounting primitives** — Add accounts, categories, transactions and balanced journal posting, add paginated ledger endpoints and React transactions table | Planned |
 | Week 4 | **CSV import, reconciliation, bills & invoices** — Add CSV import batches with column mapping and replay protection, add invoices, bills, customers and vendors with state transitions, add invoice and bill views with status actions | Planned |
@@ -88,6 +88,22 @@ flowchart LR
 | Week 7 | **Cited cash-flow briefings, reports & reliability** — Add facts envelope and structured briefing schemas, add monthly net cash and category trend APIs, add traces, metrics and SLO dashboard | Planned |
 | Week 8 | **Security hardening & release** — Review authorization on every endpoint and internal token audiences, run abuse tests for CSV uploads and prompt injection, freeze v1 scope and tag release candidate, deploy v1 demo with HTTPS and monitoring | Planned |
 
+## Documentation
+
+- [Product charter](docs/product/charter.md), [personas](docs/product/personas.md) and [backlog](docs/product/backlog.md)
+- [ADR 0001: modular monorepo and service boundaries](docs/adr/0001-modular-monorepo-and-service-boundaries.md)
+- [Getting started](docs/setup/getting-started.md)
+- [Weekly progress](docs/progress/)
+
 ## Getting started
 
-Setup instructions will be added once the first services are in place.
+Requires Docker with the Compose plugin, Node.js 22 and pnpm 10.
+
+```bash
+scripts/dev.sh up    # creates .env, builds and starts PostgreSQL, Redis, core-api and ai-api
+scripts/dev.sh web   # React dev server on http://localhost:5173
+scripts/dev.sh check # lint and unit tests (same as CI)
+```
+
+See [docs/setup/getting-started.md](docs/setup/getting-started.md) for ports, environment
+variables and troubleshooting.
