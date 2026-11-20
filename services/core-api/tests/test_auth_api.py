@@ -104,7 +104,11 @@ def test_login_rotates_the_session_key(csrf_client, owner_a) -> None:
 
 
 def test_session_endpoint_requires_sign_in() -> None:
-    assert APIClient().get("/api/v1/auth/session").status_code == 403
+    response = APIClient().get("/api/v1/auth/session")
+
+    # 401, not 403: the web app uses it to tell "expired" from "forbidden".
+    assert response.status_code == 401
+    assert response["WWW-Authenticate"] == 'Session realm="ledgerlens"'
 
 
 def test_session_endpoint_returns_current_user(csrf_client, owner_a) -> None:
@@ -123,7 +127,7 @@ def test_logout_needs_csrf_and_ends_the_session(csrf_client, owner_a) -> None:
 
     token = csrf_client.cookies["ledgerlens_csrftoken"].value
     assert csrf_client.post("/api/v1/auth/logout", HTTP_X_CSRFTOKEN=token).status_code == 204
-    assert csrf_client.get("/api/v1/auth/session").status_code == 403
+    assert csrf_client.get("/api/v1/auth/session").status_code == 401
 
 
 def test_current_member_returns_role_in_own_organization(csrf_client, owner_a, orgs) -> None:
@@ -148,4 +152,4 @@ def test_current_member_hides_other_organizations(csrf_client, owner_a, orgs) ->
 
 
 def test_current_member_requires_sign_in(orgs) -> None:
-    assert APIClient().get(f"/api/v1/orgs/{orgs['a'].id}/members/me").status_code == 403
+    assert APIClient().get(f"/api/v1/orgs/{orgs['a'].id}/members/me").status_code == 401

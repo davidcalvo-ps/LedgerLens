@@ -58,13 +58,130 @@ body {
   color: #6b4e00;
 }
 
-.role-switch {
+.workspace {
   margin-left: auto;
-  font-size: 0.875rem;
-  color: var(--muted);
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.workspace label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.workspace-name {
+  color: inherit;
+  font-weight: 600;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: #e3f1ec;
+  color: var(--accent);
+  text-transform: capitalize;
+}
+
+.user {
+  font-size: 0.875rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:focus-visible,
+.sign-in-card button:focus-visible,
+.sign-in-card input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.status-page {
+  padding: 2rem;
+  color: var(--muted);
+}
+
+.sign-in {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.sign-in-card {
+  width: min(24rem, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.sign-in-card h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.sign-in-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.sign-in-card input {
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+
+.sign-in-card button {
+  padding: 0.625rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.sign-in-card button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.sign-in-card .demo-tag {
+  align-self: flex-start;
+}
+
+.notice {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: #e8f0fb;
+  color: #1d3f6e;
+}
+
+.form-error {
+  margin: 0;
+  color: #a12622;
 }
 
 .sidebar {

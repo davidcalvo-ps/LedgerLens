@@ -20,6 +20,20 @@ class OrganizationSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "base_currency"]
 
 
+class OrganizationUpdateSerializer(serializers.ModelSerializer):
+    """Owners may rename a workspace; slug and base currency stay fixed."""
+
+    class Meta:
+        model = Organization
+        fields = ["name"]
+
+    def validate_name(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Name cannot be blank.")
+        return value
+
+
 class MembershipSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
 
@@ -37,3 +51,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, user) -> str:
         return user.get_full_name() or user.email
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Membership
+        fields = ["id", "role", "user"]

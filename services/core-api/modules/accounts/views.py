@@ -1,4 +1,4 @@
-"""Session authentication endpoints.
+"""Session authentication and workspace endpoints.
 
 The web app is served from the same origin as the API (the Vite dev server
 proxies `/api`), so a Django session cookie plus CSRF token is the whole auth
@@ -6,7 +6,6 @@ story: no tokens are ever stored in browser JavaScript.
 """
 
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework import status
@@ -15,8 +14,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Membership
-from .serializers import LoginSerializer, MembershipSerializer, UserSerializer
+from .models import Membership, Role
+from .permissions import READ_ONLY_FOR_ALL, OrganizationScopedView
+from .serializers import (
+    LoginSerializer,
+    MemberSerializer,
+    MembershipSerializer,
+    OrganizationSerializer,
+    OrganizationUpdateSerializer,
+    UserSerializer,
+)
 
 INVALID_CREDENTIALS = "Invalid email or password."
 
@@ -78,18 +85,39 @@ class SessionView(APIView):
         return Response(session_payload(request.user))
 
 
-class CurrentMemberView(APIView):
-    """The caller's membership in one organization.
-
-    Non-members get 404, not 403, so the endpoint does not reveal which
-    organization IDs exist.
-    """
-
-    permission_classes = [IsAuthenticated]
+class CurrentMemberView(OrganizationScopedView):
+    """The caller's membership in one organization (any role)."""
 
     def get(self, request: Request, org_id) -> Response:
-        membership = get_object_or_404(
-            Membership.objects.for_user(request.user).select_related("organization"),
-            organization_id=org_id,
+        return Response(MembershipSerializer(self.membership).data)
+
+
+class OrganizationDetailView(OrganizationScopedView):
+    """Workspace details: every member reads, only owners rename."""
+
+    org_roles = {**READ_ONLY_FOR_ALL, "PATCH": {Role.OWNER}}
+
+    def get(self, request: Request, org_id) -> Response:
+        return Response(OrganizationSerializer(self.organization).data)
+
+    def patch(self, request: Request, org_id) -> Response:
+        serializer = OrganizationUpdateSerializer(
+            self.organization, data=request.data, partial=True
         )
-        return Response(MembershipSerializer(membership).data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(OrganizationSerializer(serializer.instance).data)
+
+
+class MemberListView(OrganizationScopedView):
+    """Who belongs to the workspace and with which role (owners only)."""
+
+    org_roles = {"GET": {Role.OWNER}, "HEAD": {Role.OWNER}}
+
+    def get(self, request: Request, org_id) -> Response:
+        members = (
+            Membership.objects.filter(organization=self.organization, user__is_active=True)
+            .select_related("user")
+            .order_by("user__email")
+        )
+        return Response(MemberSerializer(members, many=True).data)
