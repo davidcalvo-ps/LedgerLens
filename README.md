@@ -80,7 +80,7 @@ flowchart LR
 | Week | Focus | Status |
 |---|---|---|
 | Week 1 | **Product definition & dev environment** — Add product charter, personas, backlog and React app shell, bootstrap Django REST and FastAPI health services with Compose | ✅ Done |
-| Week 2 | **Identity, tenancy & authorization** — Add organizations, memberships and session endpoints, add React sign-in, workspace switcher and tenant-scoped permissions | Planned |
+| Week 2 | **Identity, tenancy & authorization** — Add organizations, memberships and session endpoints, add React sign-in, workspace switcher and tenant-scoped permissions | ✅ Done |
 | Week 3 | **Ledger & accounting primitives** — Add accounts, categories, transactions and balanced journal posting, add paginated ledger endpoints and React transactions table | Planned |
 | Week 4 | **CSV import, reconciliation, bills & invoices** — Add CSV import batches with column mapping and replay protection, add invoices, bills, customers and vendors with state transitions, add invoice and bill views with status actions | Planned |
 | Week 5 | **Forecast engine & scenarios** — Add deterministic daily cash projection, add scenario overlays for payment delays and one-off costs | Planned |
@@ -92,7 +92,8 @@ flowchart LR
 
 - [Product charter](docs/product/charter.md), [personas](docs/product/personas.md) and [backlog](docs/product/backlog.md)
 - [ADR 0001: modular monorepo and service boundaries](docs/adr/0001-modular-monorepo-and-service-boundaries.md)
-- [Getting started](docs/setup/getting-started.md)
+- [Getting started](docs/setup/getting-started.md) and [demo accounts](docs/setup/demo-accounts.md)
+- [Identity and tenancy threat model](docs/security/identity-threat-model.md)
 - [Weekly progress](docs/progress/)
 
 ## Getting started

@@ -55,10 +55,14 @@ something already running.
 | `POSTGRES_PORT`, `REDIS_PORT`, `CORE_API_PORT` | 5432, 6379, 8000 | host ports |
 | `DJANGO_SECRET_KEY` | random on first run | required |
 | `DJANGO_DEBUG` | `true` | local only; production settings arrive with staging in week 6 |
+| `DJANGO_SECURE_COOKIES` | `false` locally, `true` elsewhere | mark session and CSRF cookies `Secure` (HTTPS only) |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | extra origins allowed to send unsafe requests |
+| `LEDGERLENS_DEMO_PASSWORD` | random on first run | password for the demo users created by `scripts/dev.sh seed` |
 
 ## Everyday commands
 
 ```bash
+scripts/dev.sh seed    # demo organizations and users (needs the stack running; see demo-accounts.md)
 scripts/dev.sh check   # lint + unit tests for web, core-api and ai-api (same as CI)
 scripts/dev.sh down    # stop the stack, keep data
 scripts/dev.sh reset   # delete the PostgreSQL and Redis volumes (asks first)
@@ -74,7 +78,12 @@ memory and stubbed health probes, so they do not need the stack to be running.
 
 - **web**: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`
 - **core-api** and **ai-api**: `ruff check` and `pytest`
+- **migrations**: against a PostgreSQL 17 + pgvector service container,
+  `makemigrations --check` (models and migrations in sync), apply all migrations, roll
+  `accounts` back to zero and re-apply, then run the demo seed twice
 - **compose**: `docker compose config` against `.env.example`
+
+Demo users and what each one can see: [demo accounts](demo-accounts.md).
 
 ## Troubleshooting
 

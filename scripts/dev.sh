@@ -3,6 +3,7 @@
 #
 #   scripts/dev.sh up      create .env if missing, build and start the whole stack, wait for health
 #   scripts/dev.sh web     install web dependencies and run the React dev server
+#   scripts/dev.sh seed    create the two demo organizations and their users (idempotent)
 #   scripts/dev.sh check   run lint and unit tests for the web app and both Python services
 #   scripts/dev.sh down    stop the stack (data volumes are kept)
 #   scripts/dev.sh reset   delete the local PostgreSQL and Redis volumes (asks first)
@@ -22,14 +23,16 @@ random_hex() {
   od -An -N"$1" -tx1 /dev/urandom | tr -d ' \n'
 }
 
-# Creates .env on first run with a random PostgreSQL password and Django secret key.
+# Creates .env on first run with a random PostgreSQL password, Django secret key and
+# demo-user password.
 ensure_env() {
   if [[ ! -f "$env_file" ]]; then
     sed -e "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(random_hex 18)/" \
       -e "s/^DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(random_hex 32)/" \
+      -e "s/^LEDGERLENS_DEMO_PASSWORD=.*/LEDGERLENS_DEMO_PASSWORD=demo-$(random_hex 8)/" \
       "$root/.env.example" >"$env_file"
     chmod 600 "$env_file"
-    echo "Created .env with a random PostgreSQL password and Django secret key."
+    echo "Created .env with random PostgreSQL, Django and demo-user secrets."
   fi
 }
 
@@ -77,6 +80,13 @@ cmd_check() {
   done
 }
 
+cmd_seed() {
+  need docker "Docker with the Compose plugin"
+  ensure_env
+  compose exec -T core-api python manage.py seed_demo_orgs
+  echo "Demo password: LEDGERLENS_DEMO_PASSWORD in .env"
+}
+
 cmd_down() {
   need docker "Docker with the Compose plugin"
   ensure_env
@@ -96,11 +106,12 @@ cmd_reset() {
 case "${1:-}" in
   up) cmd_up ;;
   web) cmd_web ;;
+  seed) cmd_seed ;;
   check) cmd_check ;;
   down) cmd_down ;;
   reset) cmd_reset ;;
   *)
-    sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
     ;;
 esac
