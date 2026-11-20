@@ -15,6 +15,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from modules.accounts.demo import MEMBERS, ORGANIZATIONS
+from modules.accounts.masking import mask_email
 from modules.accounts.models import Membership, Organization
 
 PASSWORD_ENV = "LEDGERLENS_DEMO_PASSWORD"
@@ -73,6 +74,7 @@ class Command(BaseCommand):
                 f"Seeded {len(ORGANIZATIONS)} organizations and {len(MEMBERS)} demo users."
             )
         )
+        # Output often lands in CI logs; the full addresses are in docs/setup/demo-accounts.md.
         for demo in MEMBERS:
             roles = ", ".join(f"{role.value} @ {slug}" for slug, role in demo.memberships)
-            self.stdout.write(f"  {demo.email}: {roles}")
+            self.stdout.write(f"  {mask_email(demo.email)}: {roles}")

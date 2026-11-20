@@ -92,7 +92,8 @@ flowchart LR
 
 - [Product charter](docs/product/charter.md), [personas](docs/product/personas.md) and [backlog](docs/product/backlog.md)
 - [ADR 0001: modular monorepo and service boundaries](docs/adr/0001-modular-monorepo-and-service-boundaries.md)
-- [Getting started](docs/setup/getting-started.md)
+- [Getting started](docs/setup/getting-started.md) and [demo accounts](docs/setup/demo-accounts.md)
+- [Identity and tenancy threat model](docs/security/identity-threat-model.md)
 - [Weekly progress](docs/progress/)
 
 ## Getting started

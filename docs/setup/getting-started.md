@@ -62,7 +62,7 @@ something already running.
 ## Everyday commands
 
 ```bash
-scripts/dev.sh seed    # demo organizations and users (needs the stack running)
+scripts/dev.sh seed    # demo organizations and users (needs the stack running; see demo-accounts.md)
 scripts/dev.sh check   # lint + unit tests for web, core-api and ai-api (same as CI)
 scripts/dev.sh down    # stop the stack, keep data
 scripts/dev.sh reset   # delete the PostgreSQL and Redis volumes (asks first)
@@ -78,7 +78,12 @@ memory and stubbed health probes, so they do not need the stack to be running.
 
 - **web**: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`
 - **core-api** and **ai-api**: `ruff check` and `pytest`
+- **migrations**: against a PostgreSQL 17 + pgvector service container,
+  `makemigrations --check` (models and migrations in sync), apply all migrations, roll
+  `accounts` back to zero and re-apply, then run the demo seed twice
 - **compose**: `docker compose config` against `.env.example`
+
+Demo users and what each one can see: [demo accounts](demo-accounts.md).
 
 ## Troubleshooting
 

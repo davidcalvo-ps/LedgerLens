@@ -1,49 +1,16 @@
 """Cross-tenant isolation and the role matrix for organization-scoped APIs.
 
-Two organizations, one person per role in A, plus an outsider who only
-belongs to B. Every scoped endpoint is exercised with every caller.
+Uses the shared permission fixtures in `conftest.py`: two organizations, one
+person per role in A, plus an outsider who only belongs to B. Every scoped
+endpoint is exercised with every caller.
 """
 
 import pytest
-from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from modules.accounts.models import Membership, Organization, Role
+from modules.accounts.models import Membership, Role
 
 pytestmark = pytest.mark.django_db
-
-User = get_user_model()
-
-
-def make_user(email: str, **extra):
-    return User.objects.create_user(username=email, email=email, password=None, **extra)
-
-
-@pytest.fixture
-def org_a() -> Organization:
-    return Organization.objects.create(name="Org A", slug="org-a")
-
-
-@pytest.fixture
-def org_b() -> Organization:
-    return Organization.objects.create(name="Org B", slug="org-b")
-
-
-@pytest.fixture
-def people(org_a, org_b) -> dict:
-    users = {}
-    for role in Role:
-        users[role.value] = make_user(f"{role.value}@a.example")
-        Membership.objects.create(organization=org_a, user=users[role.value], role=role)
-    users["outsider"] = make_user("owner@b.example")
-    Membership.objects.create(organization=org_b, user=users["outsider"], role=Role.OWNER)
-    return users
-
-
-def client_for(user) -> APIClient:
-    client = APIClient()
-    client.force_login(user)
-    return client
 
 
 # (method, path template, payload, expected status per role in org A)
@@ -67,13 +34,13 @@ MATRIX = [
 CASES = [
     pytest.param(method, path, payload, role, expected[role], id=f"{method}-{path}-{role}")
     for method, path, payload, expected in MATRIX
-    for role in ("owner", "accountant", "analyst")
+    for role in Role.values
 ]
 
 
 @pytest.mark.parametrize(("method", "path", "payload", "role", "expected"), CASES)
-def test_role_matrix(people, org_a, method, path, payload, role, expected) -> None:
-    client = client_for(people[role])
+def test_role_matrix(as_user, people, org_a, method, path, payload, role, expected) -> None:
+    client = as_user(people[role])
 
     response = getattr(client, method)(path.format(org=org_a.id), payload, format="json")
 
@@ -82,9 +49,9 @@ def test_role_matrix(people, org_a, method, path, payload, role, expected) -> No
 
 @pytest.mark.parametrize(("method", "path", "payload", "_role", "_expected"), CASES[::3])
 def test_outsider_gets_404_for_every_endpoint(
-    people, org_a, method, path, payload, _role, _expected
+    as_user, people, org_a, method, path, payload, _role, _expected
 ) -> None:
-    client = client_for(people["outsider"])
+    client = as_user(people["outsider"])
 
     response = getattr(client, method)(path.format(org=org_a.id), payload, format="json")
 
@@ -101,8 +68,8 @@ def test_anonymous_gets_401_for_every_endpoint(
     assert response.status_code == 401
 
 
-def test_owner_of_a_cannot_rename_b(people, org_b) -> None:
-    client = client_for(people["owner"])
+def test_owner_of_a_cannot_rename_b(as_user, people, org_b) -> None:
+    client = as_user(people["owner"])
 
     response = client.patch(f"/api/v1/orgs/{org_b.id}", {"name": "Hijacked"}, format="json")
 
@@ -111,15 +78,15 @@ def test_owner_of_a_cannot_rename_b(people, org_b) -> None:
     assert org_b.name == "Org B"
 
 
-def test_owner_of_a_cannot_list_b_members(people, org_b) -> None:
-    response = client_for(people["owner"]).get(f"/api/v1/orgs/{org_b.id}/members")
+def test_owner_of_a_cannot_list_b_members(as_user, people, org_b) -> None:
+    response = as_user(people["owner"]).get(f"/api/v1/orgs/{org_b.id}/members")
 
     assert response.status_code == 404
     assert "owner@b.example" not in response.content.decode()
 
 
-def test_forbidden_rename_leaves_the_name_alone(people, org_a) -> None:
-    client_for(people["accountant"]).patch(
+def test_forbidden_rename_leaves_the_name_alone(as_user, people, org_a) -> None:
+    as_user(people["accountant"]).patch(
         f"/api/v1/orgs/{org_a.id}", {"name": "Renamed"}, format="json"
     )
 
@@ -127,10 +94,10 @@ def test_forbidden_rename_leaves_the_name_alone(people, org_a) -> None:
     assert org_a.name == "Org A"
 
 
-def test_member_of_both_sees_each_with_its_own_role(people, org_a, org_b) -> None:
+def test_member_of_both_sees_each_with_its_own_role(as_user, people, org_a, org_b) -> None:
     accountant = people["accountant"]
     Membership.objects.create(organization=org_b, user=accountant, role=Role.ANALYST)
-    client = client_for(accountant)
+    client = as_user(accountant)
 
     in_a = client.get(f"/api/v1/orgs/{org_a.id}/members/me").json()
     in_b = client.get(f"/api/v1/orgs/{org_b.id}/members/me").json()
@@ -139,17 +106,17 @@ def test_member_of_both_sees_each_with_its_own_role(people, org_a, org_b) -> Non
     assert client.patch(f"/api/v1/orgs/{org_b.id}", {"name": "X"}, format="json").status_code == 403
 
 
-def test_deactivated_user_loses_access(people, org_a) -> None:
+def test_deactivated_user_loses_access(as_user, people, org_a) -> None:
     owner = people["owner"]
-    client = client_for(owner)
+    client = as_user(owner)
     owner.is_active = False
     owner.save()
 
     assert client.get(f"/api/v1/orgs/{org_a.id}").status_code == 401
 
 
-def test_rename_ignores_slug_and_currency(people, org_a) -> None:
-    response = client_for(people["owner"]).patch(
+def test_rename_ignores_slug_and_currency(as_user, people, org_a) -> None:
+    response = as_user(people["owner"]).patch(
         f"/api/v1/orgs/{org_a.id}",
         {"name": "  New name ", "slug": "taken", "base_currency": "USD"},
         format="json",
@@ -160,23 +127,23 @@ def test_rename_ignores_slug_and_currency(people, org_a) -> None:
     assert (org_a.name, org_a.slug, org_a.base_currency) == ("New name", "org-a", "EUR")
 
 
-def test_blank_name_is_rejected(people, org_a) -> None:
-    response = client_for(people["owner"]).patch(
+def test_blank_name_is_rejected(as_user, people, org_a) -> None:
+    response = as_user(people["owner"]).patch(
         f"/api/v1/orgs/{org_a.id}", {"name": "   "}, format="json"
     )
 
     assert response.status_code == 400
 
 
-def test_member_list_shows_only_own_organization(people, org_a) -> None:
-    response = client_for(people["owner"]).get(f"/api/v1/orgs/{org_a.id}/members")
+def test_member_list_shows_only_own_organization(as_user, people, org_a) -> None:
+    response = as_user(people["owner"]).get(f"/api/v1/orgs/{org_a.id}/members")
 
     emails = [m["user"]["email"] for m in response.json()]
     assert emails == ["accountant@a.example", "analyst@a.example", "owner@a.example"]
 
 
-def test_unlisted_methods_are_denied_even_for_owners(people, org_a) -> None:
-    client = client_for(people["owner"])
+def test_unlisted_methods_are_denied_even_for_owners(as_user, people, org_a) -> None:
+    client = as_user(people["owner"])
 
     assert client.delete(f"/api/v1/orgs/{org_a.id}").status_code == 403
     assert client.put(f"/api/v1/orgs/{org_a.id}", {"name": "X"}, format="json").status_code == 403

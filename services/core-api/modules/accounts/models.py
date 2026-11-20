@@ -10,6 +10,8 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from .masking import mask_email
+
 
 class Role(models.TextChoices):
     OWNER = "owner", "Owner"
@@ -72,4 +74,5 @@ class Membership(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.user} @ {self.organization} ({self.role})"
+        # Shown in logs and the shell; never print a member's full email there.
+        return f"{mask_email(self.user.email)} @ {self.organization} ({self.role})"
